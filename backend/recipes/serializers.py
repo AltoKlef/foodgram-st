@@ -3,6 +3,12 @@ from .models import Recipe, Ingredient, RecipeIngredient
 from .fields import Base64ImageField
 
 
+class IngredientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ingredient
+        fields = ('id', 'name', 'measurement_unit')
+
+
 class IngredientAmountSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     amount = serializers.IntegerField(min_value=1)
