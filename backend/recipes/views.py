@@ -1,23 +1,17 @@
-from rest_framework import viewsets, permissions, filters
+from rest_framework import viewsets, permissions
 from .models import Recipe, Ingredient
 from .serializers import (RecipeCreateSerializer,
                           IngredientSerializer)
+from .filters import IngredientFilter
+from .pagination import RecipesPagination
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    #filter_backends = [filters.SearchFilter]
-    pagination_class = None
-    #search_fields = ['^name']  # 👈 поиск по началу строки
-
-    def get_queryset(self):
-        queryset = Ingredient.objects.all()
-        name = self.request.query_params.get('name')
-        if name:
-            queryset = queryset.filter(name__istartswith=name)
-        return queryset
+    pagination_class = RecipesPagination
+    filterset_class = IngredientFilter
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
