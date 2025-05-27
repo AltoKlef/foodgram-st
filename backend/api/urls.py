@@ -6,5 +6,5 @@ urlpatterns = [
     path('recipes/', include('recipes.urls')),
     path('auth/', include('djoser.urls')),
     path('auth/', include('djoser.urls.authtoken')),
-    path('', include('users.urls')),
+    path('users/', include('users.urls')),
 ]
