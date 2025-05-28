@@ -1,7 +1,8 @@
 frontend/node_modules
 infra/frontend/build
 .env
-
+backend/recipes/images
+backend/users/avatars
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

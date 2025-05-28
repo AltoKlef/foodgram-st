@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import Recipe, Ingredient, RecipeIngredient
 from .fields import Base64ImageField
-
+from django.db import transaction
 
 class IngredientSerializer(serializers.ModelSerializer):
     """
@@ -110,18 +110,16 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         return recipe
 
     def update(self, instance, validated_data):
-        """
-        Обновление существующего рецепта.
-        Если переданы ингредиенты, старые удаляются и создаются новые.
-        Обновляются все остальные поля рецепта.
-        """
         ingredients_data = validated_data.pop('ingredients', None)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
-        instance.save()
-        if ingredients_data is not None:
-            instance.ingredients.all().delete()
-            self.create_ingredients(ingredients_data, instance)
+
+        with transaction.atomic():
+            instance.save()
+            if ingredients_data is not None:
+                instance.ingredients.clear()  # Или .all().delete(), если нужно
+                self.create_ingredients(ingredients_data, instance)
+
         return instance
 
 
