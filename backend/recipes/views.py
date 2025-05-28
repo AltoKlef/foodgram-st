@@ -1,6 +1,8 @@
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, status
+from rest_framework.response import Response
 from .models import Recipe, Ingredient
-from .serializers import (RecipeCreateSerializer,
+from .serializers import (RecipeReadSerializer,
+                          RecipeWriteSerializer,
                           IngredientSerializer)
 from .filters import IngredientFilter
 # from .pagination import RecipesPagination
@@ -15,15 +17,23 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
-
     queryset = Recipe.objects.all()
-    serializer_class = RecipeCreateSerializer  # <-- обязательно
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def get_serializer_class(self):
-        if self.action == 'create':
-            return RecipeCreateSerializer
-        return RecipeCreateSerializer  # позже можно добавить RecipeListSerializer и т.п.
+        if self.request.method in ('GET',):
+            return RecipeReadSerializer
+        return RecipeWriteSerializer
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        self.recipe = serializer.save()  # сохраняем объект рецепта
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+
+        # Здесь — сериализация для ответа через READ-сериализатор
+        read_serializer = RecipeReadSerializer(
+            self.recipe, context=self.get_serializer_context()
+        )
+        return Response(read_serializer.data, status=status.HTTP_201_CREATED)
