@@ -62,7 +62,7 @@ class Favorite(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE, related_name='favorites')
     recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE, related_name='favorites')
+        Recipe, on_delete=models.CASCADE, related_name='favorited_by')
 
     class Meta:
         unique_together = ['user', 'recipe']

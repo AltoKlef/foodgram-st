@@ -2,12 +2,13 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
+from core.permissions import IsAuthorOrReadOnly
 from .models import Recipe, Ingredient, Favorite
 from .serializers import (RecipeReadSerializer,
                           RecipeWriteSerializer,
                           IngredientSerializer,
                           FavoriteRecipeSerializer)
-from .filters import IngredientFilter
+from .filters import IngredientFilter, RecipeFilter
 # from .pagination import RecipesPagination
 
 
@@ -20,7 +21,13 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
+    permission_classes = [
+        permissions.IsAuthenticatedOrReadOnly,
+        IsAuthorOrReadOnly
+    ]
     queryset = Recipe.objects.all()
+    filterset_class = RecipeFilter
+    #pagination_class = None
 
     def get_serializer_class(self):
         if self.request.method in ('GET',):
@@ -37,7 +44,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
         return Response(read_serializer.data, status=status.HTTP_201_CREATED)
 
-    @action(detail=True, methods=['post', 'delete'], permission_classes=[permissions.IsAuthenticated])
+    @action(detail=True, methods=['post', 'delete'])
     def favorite(self, request, pk=None):
         recipe = get_object_or_404(Recipe, pk=pk)
         user = request.user

@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from .models import Recipe, Ingredient, RecipeIngredient
 from core.fields import Base64ImageField
-from django.db import transaction
+from users.serializers import CustomUserListSerializer
+
 
 class IngredientSerializer(serializers.ModelSerializer):
     """
@@ -24,7 +25,7 @@ class IngredientAmountSerializer(serializers.Serializer):
     amount = serializers.IntegerField(min_value=1)
 
 
-class IngredientInRecipeSerializer(serializers.ModelSerializer):
+class RecipeIngredientSerializer(serializers.ModelSerializer):
     """
     Сериализатор для отображения ингредиента в рецепте (на чтение).
     Отображает вложенные данные ингредиента:
@@ -43,24 +44,37 @@ class IngredientInRecipeSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'measurement_unit', 'amount')
 
 
+
 class RecipeReadSerializer(serializers.ModelSerializer):
     """
     Сериализатор для чтения рецептов.
-    Отображает список ингредиентов (через IngredientInRecipeSerializer)
-    и изображение в виде base64.
+    Отображает список ингредиентов, автора, флаг избранного и корзины.
     """
-    ingredients = IngredientInRecipeSerializer(
+    ingredients = RecipeIngredientSerializer(
         source='ingredients_links',
         many=True
     )
     image = Base64ImageField()
+    author = CustomUserListSerializer(read_only=True)
+    is_favorited = serializers.SerializerMethodField()
+    is_in_shopping_cart = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe
         fields = [
             'id', 'name', 'text', 'image',
-            'cooking_time', 'ingredients'
+            'cooking_time', 'ingredients',
+            'author', 'is_favorited', 'is_in_shopping_cart'
         ]
+
+    def get_is_favorited(self, obj):
+        user = self.context.get('request').user
+        if user.is_anonymous:
+            return False
+        return obj.favorited_by.filter(user=user).exists()
+
+    def get_is_in_shopping_cart(self, obj):
+        return False  # пока заглушка
 
 
 class RecipeWriteSerializer(serializers.ModelSerializer):
@@ -109,16 +123,26 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         self.create_ingredients(ingredients_data, recipe)
         return recipe
 
+    def update_ingredients(self, recipe, ingredients_data):
+        recipe.ingredients_links.all().delete()
+        ingredients = [
+            RecipeIngredient(
+                recipe=recipe,
+                ingredient_id=item['id'],
+                amount=item['amount']
+            ) for item in ingredients_data
+        ]
+        RecipeIngredient.objects.bulk_create(ingredients)
+
     def update(self, instance, validated_data):
         ingredients_data = validated_data.pop('ingredients', None)
+
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
+        instance.save()
 
-        with transaction.atomic():
-            instance.save()
-            if ingredients_data is not None:
-                instance.ingredients.clear()  # Или .all().delete(), если нужно
-                self.create_ingredients(ingredients_data, instance)
+        if ingredients_data is not None:
+            self.update_ingredients(instance, ingredients_data)
 
         return instance
 
