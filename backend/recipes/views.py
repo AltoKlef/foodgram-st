@@ -27,7 +27,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        recipe = serializer.save()  # сразу сохраняем
+        recipe = serializer.save()
 
         read_serializer = RecipeReadSerializer(
             recipe, context=self.get_serializer_context()
