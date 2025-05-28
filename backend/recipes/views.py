@@ -3,14 +3,14 @@ from .models import Recipe, Ingredient
 from .serializers import (RecipeCreateSerializer,
                           IngredientSerializer)
 from .filters import IngredientFilter
-from .pagination import RecipesPagination
+# from .pagination import RecipesPagination
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    pagination_class = RecipesPagination
+    pagination_class = None
     filterset_class = IngredientFilter
 
 
@@ -21,7 +21,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def get_serializer_class(self):
-        print("AAAAAA")
         if self.action == 'create':
             return RecipeCreateSerializer
         return RecipeCreateSerializer  # позже можно добавить RecipeListSerializer и т.п.
