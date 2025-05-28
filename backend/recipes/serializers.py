@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from collections import Counter
 from .models import Recipe, Ingredient, RecipeIngredient
 from core.fields import Base64ImageField
 from users.serializers import CustomUserListSerializer
@@ -84,8 +85,9 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     через IngredientAmountSerializer
     и изображение в формате base64.
     """
-    ingredients = IngredientAmountSerializer(many=True)
+    ingredients = IngredientAmountSerializer(many=True, required=True)
     image = Base64ImageField(required=False, allow_null=True)
+    cooking_time = serializers.IntegerField(min_value=1)
 
     class Meta:
         model = Recipe
@@ -93,6 +95,17 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             'id', 'name', 'text', 'image',
             'cooking_time', 'ingredients'
         ]
+
+    def validate_ingredients(self, value):
+        if not value:
+            raise serializers.ValidationError('Нужен хотя бы один ингредиент.')
+        ids = [item['id'] for item in value]
+        duplicates = [item for item, count in Counter(ids).items() if count > 1]
+        if duplicates:
+            raise serializers.ValidationError(
+                'Ингредиенты не должны повторяться.'
+            )
+        return value
 
     def create_ingredients(self, ingredients_data, recipe):
         """
@@ -125,17 +138,17 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
 
     def update_ingredients(self, recipe, ingredients_data):
         recipe.ingredients_links.all().delete()
-        ingredients = [
+        RecipeIngredient.objects.bulk_create([
             RecipeIngredient(
                 recipe=recipe,
-                ingredient_id=item['id'],
-                amount=item['amount']
-            ) for item in ingredients_data
-        ]
-        RecipeIngredient.objects.bulk_create(ingredients)
+                ingredient=ingredient_data['id'],
+                amount=ingredient_data['amount']
+            )
+            for ingredient_data in ingredients_data
+        ])
 
     def update(self, instance, validated_data):
-        ingredients_data = validated_data.pop('ingredients', None)
+        ingredients_data = validated_data.pop('ingredients')
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
