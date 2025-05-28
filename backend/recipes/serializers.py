@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Recipe, Ingredient, RecipeIngredient
-from .fields import Base64ImageField
+from core.fields import Base64ImageField
 from django.db import transaction
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -123,4 +123,9 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         return instance
 
 
+class FavoriteRecipeSerializer(serializers.ModelSerializer):
+    image = Base64ImageField()
 
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time')

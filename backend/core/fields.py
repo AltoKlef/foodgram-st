@@ -5,11 +5,14 @@ from django.core.files.base import ContentFile
 
 
 class Base64ImageField(serializers.ImageField):
+    """
+    Поле изображения, поддерживающее загрузку в формате base64.
+    Пример: data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...
+    """
     def to_internal_value(self, data):
         if isinstance(data, str) and data.startswith('data:image'):
-            # Пример: data:image/png;base64,xxxxxx
-            format, imgstr = data.split(';base64,')  # format ~= data:image/png
-            ext = format.split('/')[-1]  # png
+            format, imgstr = data.split(';base64,')
+            ext = format.split('/')[-1]
 
             img_data = base64.b64decode(imgstr)
             file_name = f'{uuid.uuid4()}.{ext}'

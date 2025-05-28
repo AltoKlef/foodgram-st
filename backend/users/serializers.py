@@ -4,8 +4,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import get_user_model
 from django.core.validators import RegexValidator
 from rest_framework.validators import UniqueValidator
-from drf_extra_fields.fields import Base64ImageField
-from .fields import Base64ImageField
+from core.fields import Base64ImageField
 from .models import Subscription
 User = get_user_model()
 
