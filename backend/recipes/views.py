@@ -24,16 +24,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeReadSerializer
         return RecipeWriteSerializer
 
-    def perform_create(self, serializer):
-        self.recipe = serializer.save()  # сохраняем объект рецепта
-
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
+        recipe = serializer.save()  # сразу сохраняем
 
-        # Здесь — сериализация для ответа через READ-сериализатор
         read_serializer = RecipeReadSerializer(
-            self.recipe, context=self.get_serializer_context()
+            recipe, context=self.get_serializer_context()
         )
         return Response(read_serializer.data, status=status.HTTP_201_CREATED)

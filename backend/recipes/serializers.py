@@ -12,8 +12,6 @@ class IngredientSerializer(serializers.ModelSerializer):
 class IngredientAmountSerializer(serializers.Serializer):
     id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
     amount = serializers.IntegerField(min_value=1)
-    class Meta:
-        model: RecipeIngredient
 
 
 class IngredientInRecipeSerializer(serializers.ModelSerializer):
@@ -66,7 +64,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         ingredients_data = validated_data.pop('ingredients')
         recipe = Recipe.objects.create(
-            author=self.context['request'].user,  # ✅ вот тут
+            author=self.context['request'].user,
             **validated_data
         )
         self.create_ingredients(ingredients_data, recipe)
@@ -77,11 +75,9 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
-
         if ingredients_data is not None:
-            instance.recipeingredient_set.all().delete()
+            instance.ingredients.all().delete()
             self.create_ingredients(ingredients_data, instance)
-
         return instance
 
 
