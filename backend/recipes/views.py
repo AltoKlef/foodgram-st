@@ -30,8 +30,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     ]
     queryset = Recipe.objects.all()
     filterset_class = RecipeFilter
-    #pagination_class = None
-    
+    # pagination_class = None
+
     def get_serializer_class(self):
         if self.request.method in ('GET',):
             return RecipeReadSerializer

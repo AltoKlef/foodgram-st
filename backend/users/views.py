@@ -26,7 +26,9 @@ class UserViewSet(viewsets.ModelViewSet):
         url_path='me'
     )
     def me(self, request):
-        serializer = CustomUserListSerializer(request.user)
+        serializer = CustomUserListSerializer(
+            request.user, context={'request': self.request}
+        )
         return Response(serializer.data)
 
     @action(
@@ -51,14 +53,15 @@ class UserViewSet(viewsets.ModelViewSet):
         if self.action == 'create':
             return CustomUserCreateSerializer
         return CustomUserListSerializer
-    
+
     @action(
         detail=False,
         methods=['post'],
         url_path='set_password',
         permission_classes=[permissions.IsAuthenticated])
     def set_password(self, request):
-        serializer = SetPasswordSerializer(data=request.data, context={'request': request})
+        serializer = SetPasswordSerializer(
+            data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
 
         user = request.user
@@ -72,6 +75,38 @@ class UserViewSet(viewsets.ModelViewSet):
         user.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    @action(
+        detail=False, methods=['get'],
+        url_path='subscriptions',
+        permission_classes=[permissions.IsAuthenticated]
+    )
+    def subscriptions(self, request):
+        user = request.user
+        subscriptions = Subscription.objects.filter(user=user)
+
+        recipes_limit = request.query_params.get('recipes_limit')
+
+        page = self.paginate_queryset(subscriptions)
+        if page is not None:
+            serializer = SubscriptionSerializer(
+                page,
+                many=True,
+                context={
+                    'request': request,
+                    'recipes_limit': recipes_limit
+                }
+            )
+            return self.get_paginated_response(serializer.data)
+
+        serializer = SubscriptionSerializer(
+            subscriptions,
+            many=True,
+            context={
+                'request': request,
+                'recipes_limit': recipes_limit
+            }
+        )
+        return Response(serializer.data)
 
     @action(
         detail=True,
