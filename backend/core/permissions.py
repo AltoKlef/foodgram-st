@@ -3,7 +3,8 @@ from rest_framework.permissions import BasePermission, SAFE_METHODS
 
 class IsAuthorOrReadOnly(BasePermission):
     """
-    Разрешение, разрешающее только автору объекта редактировать или удалять его.
+    Разрешение, разрешающее только автору объекта
+    редактировать или удалять его.
     Остальным пользователям доступно только чтение.
     """
 

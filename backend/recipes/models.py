@@ -2,6 +2,8 @@
 from django.conf import settings
 from django.db import models
 from django_filters.rest_framework import DjangoFilterBackend
+
+
 class Ingredient(models.Model):
     name = models.CharField(max_length=200)
     measurement_unit = models.CharField(max_length=50)
@@ -43,12 +45,15 @@ class Recipe(models.Model):
         return self.name
 
 
-
 class RecipeIngredient(models.Model):
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name="ingredients_links")
+    recipe = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE,
+        related_name="ingredients_links"
+    )
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
     amount = models.PositiveSmallIntegerField()
     filter_backends = [DjangoFilterBackend]
+
     class Meta:
         unique_together = ['recipe', 'ingredient']
 

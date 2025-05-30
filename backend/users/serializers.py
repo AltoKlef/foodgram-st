@@ -81,15 +81,20 @@ class CustomUserListSerializer(serializers.ModelSerializer):
         return Subscription.objects.filter(user=user, author=obj).exists()
 
 
-
 class SubscriptionSerializer(serializers.ModelSerializer):
-    email = serializers.EmailField(source='author.email', read_only=True)
-    id = serializers.IntegerField(source='author.id', read_only=True)
-    username = serializers.CharField(source='author.username', read_only=True)
-    first_name = serializers.CharField(source='author.first_name', read_only=True)
-    last_name = serializers.CharField(source='author.last_name', read_only=True)
+    email = serializers.EmailField(source='author.email',
+                                   read_only=True)
+    id = serializers.IntegerField(source='author.id',
+                                  read_only=True)
+    username = serializers.CharField(source='author.username',
+                                     read_only=True)
+    first_name = serializers.CharField(source='author.first_name',
+                                       read_only=True)
+    last_name = serializers.CharField(source='author.last_name',
+                                      read_only=True)
     is_subscribed = serializers.SerializerMethodField()
-    avatar = serializers.ImageField(source='author.avatar', read_only=True)
+    avatar = serializers.ImageField(source='author.avatar',
+                                    read_only=True)
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
 
@@ -109,7 +114,10 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         recipes = obj.author.recipes.all()
         if recipes_limit:
             recipes = recipes[:int(recipes_limit)]
-        serializer = ShortRecipeSerializer(recipes, many=True, context={'request': request})
+        serializer = ShortRecipeSerializer(
+            recipes,
+            many=True,
+            context={'request': request})
         return serializer.data
 
     def get_recipes_count(self, obj):
