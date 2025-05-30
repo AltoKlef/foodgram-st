@@ -45,7 +45,6 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'measurement_unit', 'amount')
 
 
-
 class RecipeReadSerializer(serializers.ModelSerializer):
     """
     Сериализатор для чтения рецептов.
@@ -86,7 +85,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     и изображение в формате base64.
     """
     ingredients = IngredientAmountSerializer(many=True, required=True)
-    image = Base64ImageField(required=False, allow_null=True)
+    image = Base64ImageField(required=True, allow_null=True)
     cooking_time = serializers.IntegerField(min_value=1)
 
     class Meta:
@@ -95,6 +94,13 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             'id', 'name', 'text', 'image',
             'cooking_time', 'ingredients'
         ]
+
+    def validate(self, data):
+        if 'ingredients' not in data:
+            raise serializers.ValidationError({
+                'ingredients': 'Это поле обязательно.'
+            })
+        return data
 
     def validate_ingredients(self, value):
         if not value:
@@ -111,7 +117,6 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         """
         Создаёт записи в промежуточной таблице RecipeIngredient
         на основе переданных ингредиентов и количества.
-        Используется при создании и обновлении рецепта.
         """
         RecipeIngredient.objects.bulk_create([
             RecipeIngredient(

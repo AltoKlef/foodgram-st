@@ -13,10 +13,11 @@ class IngredientFilter(filters.FilterSet):
 
 class RecipeFilter(filters.FilterSet):
     is_favorited = filters.BooleanFilter(method='filter_is_favorited')
+    author = filters.NumberFilter(field_name='author__id')
 
     class Meta:
         model = Recipe
-        fields = ['is_favorited']
+        fields = ['is_favorited', 'author']
 
     def filter_is_favorited(self, queryset, name, value):
         user = self.request.user

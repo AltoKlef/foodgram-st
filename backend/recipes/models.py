@@ -1,7 +1,7 @@
 # Create your models here.
 from django.conf import settings
 from django.db import models
-
+from django_filters.rest_framework import DjangoFilterBackend
 class Ingredient(models.Model):
     name = models.CharField(max_length=200)
     measurement_unit = models.CharField(max_length=50)
@@ -24,8 +24,7 @@ class Recipe(models.Model):
     )
     name = models.CharField(max_length=256)
     image = models.ImageField(
-        upload_to='recipes/images/', blank=True, null=True,
-        default=None
+        upload_to='recipes/images/',
     )
     text = models.TextField()
     ingredients = models.ManyToManyField(
@@ -49,7 +48,7 @@ class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name="ingredients_links")
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
     amount = models.PositiveSmallIntegerField()
-
+    filter_backends = [DjangoFilterBackend]
     class Meta:
         unique_together = ['recipe', 'ingredient']
 
