@@ -1,15 +1,17 @@
 from rest_framework import viewsets, permissions, status
-from django.contrib.auth import get_user_model
+
 from rest_framework.decorators import action
 from rest_framework.response import Response
-
+from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
 from .serializers import (
     CustomUserCreateSerializer,
     CustomUserListSerializer,
     SetAvatarSerializer,
-    SetPasswordSerializer
+    SetPasswordSerializer,
+    SubscriptionSerializer
 )
-
+from .models import Subscription
 User = get_user_model()
 
 
@@ -69,3 +71,37 @@ class UserViewSet(viewsets.ModelViewSet):
         user.set_password(serializer.validated_data['new_password'])
         user.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
+     @action(
+        detail=True,
+        methods=['post', 'delete'],
+        permission_classes=[permissions.IsAuthenticated],
+        url_path='subscribe'
+    )
+    def subscribe(self, request, pk=None):
+        author = get_object_or_404(User, pk=pk)
+        user = request.user
+
+        if request.method == 'POST':
+            if author == user:
+                return Response(
+                    {'errors': 'Нельзя подписаться на самого себя.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            if Subscription.objects.filter(user=user, author=author).exists():
+                return Response(
+                    {'errors': 'Вы уже подписаны.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            subscription = Subscription.objects.create(user=user, author=author)
+            serializer = SubscriptionSerializer(subscription, context={'request': request})
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        if request.method == 'DELETE':
+            subscription = Subscription.objects.filter(user=user, author=author)
+            if not subscription.exists():
+                return Response(
+                    {'errors': 'Вы не подписаны на этого пользователя.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            subscription.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
