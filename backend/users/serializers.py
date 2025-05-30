@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from django.core.validators import RegexValidator
 from rest_framework.validators import UniqueValidator
 from core.fields import Base64ImageField
+from core.serializers import ShortRecipeSerializer
 from .models import Subscription
 User = get_user_model()
 
@@ -74,30 +75,42 @@ class CustomUserListSerializer(serializers.ModelSerializer):
         )
 
     def get_is_subscribed(self, obj):
-        return False  # пока нет механизма подписок
+        user = self.context.get('request').user
+        if user.is_anonymous:
+            return False
+        return Subscription.objects.filter(user=user, author=obj).exists()
 
 
 
-'''class SubscriptionSerializer(serializers.ModelSerializer):
-    recipes = RecipeShortSerializer(many=True, read_only=True)
-    recipes_count = serializers.IntegerField(source='recipes.count', read_only=True)
+class SubscriptionSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(source='author.email', read_only=True)
+    id = serializers.IntegerField(source='author.id', read_only=True)
+    username = serializers.CharField(source='author.username', read_only=True)
+    first_name = serializers.CharField(source='author.first_name', read_only=True)
+    last_name = serializers.CharField(source='author.last_name', read_only=True)
+    is_subscribed = serializers.SerializerMethodField()
+    avatar = serializers.ImageField(source='author.avatar', read_only=True)
+    recipes = serializers.SerializerMethodField()
+    recipes_count = serializers.SerializerMethodField()
 
     class Meta:
-        model = User
+        model = Subscription
         fields = (
-            'id', 'email', 'username', 'first_name', 'last_name',
-            'avatar', 'is_subscribed', 'recipes', 'recipes_count'
+            'email', 'id', 'username', 'first_name', 'last_name',
+            'is_subscribed', 'recipes', 'recipes_count', 'avatar'
         )
 
-    def to_representation(self, instance):
-        """recipes_limit обработка"""
-        rep = super().to_representation(instance)
+    def get_is_subscribed(self, obj):
+        return True
+
+    def get_recipes(self, obj):
         request = self.context.get('request')
-        limit = request.query_params.get('recipes_limit')
-        if limit:
-            try:
-                limit = int(limit)
-                rep['recipes'] = rep['recipes'][:limit]
-            except ValueError:
-                pass
-        return rep'''
+        recipes_limit = request.query_params.get('recipes_limit')
+        recipes = obj.author.recipes.all()
+        if recipes_limit:
+            recipes = recipes[:int(recipes_limit)]
+        serializer = ShortRecipeSerializer(recipes, many=True, context={'request': request})
+        return serializer.data
+
+    def get_recipes_count(self, obj):
+        return obj.author.recipes.count()

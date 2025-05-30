@@ -2,6 +2,7 @@ from rest_framework import serializers
 from collections import Counter
 from .models import Recipe, Ingredient, RecipeIngredient
 from core.fields import Base64ImageField
+
 from users.serializers import CustomUserListSerializer
 
 
@@ -74,7 +75,10 @@ class RecipeReadSerializer(serializers.ModelSerializer):
         return obj.favorited_by.filter(user=user).exists()
 
     def get_is_in_shopping_cart(self, obj):
-        return False  # пока заглушка
+        user = self.context.get('request').user
+        if user.is_anonymous:
+            return False
+        return obj.in_shopping_carts.filter(user=user).exists()
 
 
 class RecipeWriteSerializer(serializers.ModelSerializer):
@@ -171,3 +175,5 @@ class FavoriteRecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
+
+
