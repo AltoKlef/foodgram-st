@@ -19,7 +19,7 @@ services:
     volumes:
       - ./backend:/app
       - media_data:/app/media
-      - ./data:/app/data  # доступ к ingredients.csv
+      - ./data:/app/data
     ports:
       - "8000:8000"
     depends_on:

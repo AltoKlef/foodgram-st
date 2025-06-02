@@ -8,7 +8,7 @@ class Command(BaseCommand):
     help = 'Импортирует ингредиенты из файла ingredients.csv'
 
     def handle(self, *args, **options):
-        file_path = Path('../data/ingredients.csv')  # путь от корня проекта
+        file_path = Path('./data/ingredients.csv')
         if not file_path.exists():
             self.stdout.write(self.style.ERROR(f"Файл {file_path} не найден"))
             return

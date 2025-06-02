@@ -18,7 +18,7 @@ class Ingredient(models.Model):
         return f'{self.name} ({self.measurement_unit})'
 
 
-class Recipe(models.Model): 
+class Recipe(models.Model):
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -56,6 +56,8 @@ class RecipeIngredient(models.Model):
 
     class Meta:
         unique_together = ['recipe', 'ingredient']
+        verbose_name = 'Ингридент в рецепте'
+        verbose_name_plural = 'Ингридиенты в рецептах'
 
     def __str__(self):
         return f'{self.ingredient} — {self.amount} for {self.recipe}'
