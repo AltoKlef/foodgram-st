@@ -1,15 +1,22 @@
 from django.contrib import admin
 from django.contrib.auth import get_user_model
 
-from .models import Ingredient, Recipe, RecipeIngredient, Favorite, ShoppingCart
+from .models import (
+    Ingredient,
+    Recipe,
+    RecipeIngredient,
+    Favorite,
+    ShoppingCart)
 
 User = get_user_model()
+
 
 @admin.register(Favorite)
 class FavoriteAdmin(admin.ModelAdmin):
     list_display = ('user', 'recipe')
     search_fields = ('user__username', 'recipe__name')
     list_filter = ('user',)
+
 
 @admin.register(ShoppingCart)
 class ShoppingCartAdmin(admin.ModelAdmin):
@@ -34,6 +41,7 @@ class RecipeAdmin(admin.ModelAdmin):
     @admin.display(description='В избранном раз')
     def favorites_count(self, obj):
         return obj.favorites.count()
+
 
 @admin.register(RecipeIngredient)
 class RecipeIngredientAdmin(admin.ModelAdmin):
