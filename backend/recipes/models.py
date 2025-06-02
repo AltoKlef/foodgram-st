@@ -10,7 +10,9 @@ class Ingredient(models.Model):
 
     class Meta:
         ordering = ['name']
-        unique_together = ['name', 'measurement_unit']
+        constraints = [models.UniqueConstraint(
+            fields=['name', 'measurement_unit'],
+            name='unique_name_unit')]
         verbose_name = 'Ингридиент'
         verbose_name_plural = 'Ингридиенты'
 
@@ -55,7 +57,12 @@ class RecipeIngredient(models.Model):
     filter_backends = [DjangoFilterBackend]
 
     class Meta:
-        unique_together = ['recipe', 'ingredient']
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    'recipe', 'ingredient'
+                ], name='unique_recipe_ingredient')
+        ]
         verbose_name = 'Ингридент в рецепте'
         verbose_name_plural = 'Ингридиенты в рецептах'
 
@@ -71,7 +78,10 @@ class Favorite(models.Model):
         Recipe, on_delete=models.CASCADE, related_name='favorited_by')
 
     class Meta:
-        unique_together = ['user', 'recipe']
+        constraints = [models.UniqueConstraint(
+            fields=['user', 'recipe'],
+            name='unique_user_recipe')
+        ]
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранное'
 
@@ -88,7 +98,10 @@ class ShoppingCart(models.Model):
         Recipe, on_delete=models.CASCADE, related_name='in_shopping_carts')
 
     class Meta:
-        unique_together = ['user', 'recipe']
+        constraints = [models.UniqueConstraint(
+            fields=['user', 'recipe'],
+            name='unique_user_recipe_shop')
+        ]
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'
 
