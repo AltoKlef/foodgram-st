@@ -4,14 +4,13 @@ services:
   db:
     image: postgres:14
     restart: always
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
+    ports:
+      - "5433:5432"
     environment:
       POSTGRES_DB: foodgram
       POSTGRES_USER: foodgram_user
       POSTGRES_PASSWORD: foodgram_pass
-    ports:
-      - "5432:5432"
+
 
   backend:
     build: ../backend
