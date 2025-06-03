@@ -1,0 +1,96 @@
+[
+{
+  "model": "users.customuser",
+  "pk": 1,
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$MlcGhaQiU2Q6LoW24hU858$0doSBcz4ZUAPEmWhgaB4/ScgcXTx5kGNoH5nIMEBfw8=",
+    "last_login": "2025-06-03T15:34:59.601Z",
+    "is_superuser": false,
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-06-03T15:34:56.117Z",
+    "email": "staykoruslan2004@gmail.com",
+    "username": "Alto",
+    "first_name": "Rus",
+    "last_name": "Lan",
+    "avatar": "",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.customuser",
+  "pk": 2,
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$FNlf7bPHzWiEsTiO87Zl2v$ldkAF78cYtS6gcdaJp1reQCXQJdJRWjNSRUHqT3yeko=",
+    "last_login": "2025-06-03T16:59:36.471Z",
+    "is_superuser": false,
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-06-03T15:35:04.313Z",
+    "email": "vivanov@yandex.ru",
+    "username": "vasya.ivanov",
+    "first_name": "Вася",
+    "last_name": "Иванов",
+    "avatar": "",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.customuser",
+  "pk": 3,
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$arjTdfr32TCLaof6HNtTBz$JhbcxRGUMRgqe5DEs50EwF3IXkA/hWa3+VFp/4SHqKs=",
+    "last_login": "2025-06-03T16:59:31.833Z",
+    "is_superuser": false,
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-06-03T15:35:04.733Z",
+    "email": "second_user@email.org",
+    "username": "second-user",
+    "first_name": "Андрей",
+    "last_name": "Макаревский",
+    "avatar": "",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.customuser",
+  "pk": 4,
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$hBhyiiQw4R5x7sM2j9VBhF$3Gng5m9JUbJuMmVLWy9b+alFodKhaN9MsZjPQszi8tA=",
+    "last_login": null,
+    "is_superuser": false,
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-06-03T15:35:05.108Z",
+    "email": "third-user@user.ru",
+    "username": "third-user-username",
+    "first_name": "Гордон",
+    "last_name": "Рамзиков",
+    "avatar": "",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.customuser",
+  "pk": 6,
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$Al81OM10DTsLt4ShVGxLCb$SawSrM6YKBaZfTlz7Z8agQMzAmD+RGGdVnP3erqanhs=",
+    "last_login": null,
+    "is_superuser": true,
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2025-06-03T18:46:02.928Z",
+    "email": "staykoruslan@gmail.com",
+    "username": "Alto_K",
+    "first_name": "Rus",
+    "last_name": "Lan",
+    "avatar": "",
+    "groups": [],
+    "user_permissions": []
+  }
+}]

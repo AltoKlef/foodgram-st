@@ -42,4 +42,4 @@ jobs:
       with:
         context: ./infra
         push: true
-        tags: ${{ secrets.DOCKER_USERNAME }}/foodgram-nginx:latest
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/foodgram-nginx:latest
