@@ -37,10 +37,3 @@ jobs:
         push: true
         tags: ${{ secrets.DOCKERHUB_USERNAME }}/foodgram-frontend:latest
 
-    - name: Build and push nginx image
-      uses: docker/build-push-action@v5
-      with:
-        context: ./infra  # если nginx конфиги тут
-        dockerfile: ./infra/nginx.Dockerfile  # если есть
-        push: true
-        tags: ${{ secrets.DOCKERHUB_USERNAME }}/foodgram-nginx:latest
