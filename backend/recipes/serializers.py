@@ -91,12 +91,13 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     ingredients = IngredientAmountSerializer(many=True, required=True)
     image = Base64ImageField(required=True, allow_null=True)
     cooking_time = serializers.IntegerField(min_value=1)
+    short_link = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe
         fields = [
             'id', 'name', 'text', 'image',
-            'cooking_time', 'ingredients'
+            'cooking_time', 'ingredients', 'short_link'
         ]
 
     def validate(self, data):
@@ -167,6 +168,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             self.update_ingredients(instance, ingredients_data)
 
         return instance
+
 
 
 class FavoriteRecipeSerializer(serializers.ModelSerializer):
