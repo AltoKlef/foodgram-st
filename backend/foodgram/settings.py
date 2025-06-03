@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-ppkz$&ve0t!0s9+=h(pr$ay)jm%ckqagp7$qatg5_c_975**$^
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [""]
 
 
 # Application definition
@@ -146,7 +146,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'DEFAULT_PAGINATION_CLASS': 'core.pagination.LimitPageNumberPagination',
     'PAGE_SIZE': 6,
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',

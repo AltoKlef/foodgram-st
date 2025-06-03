@@ -4,6 +4,7 @@ from .models import Subscription
 # Register your models here.
 User = get_user_model()
 
+
 @admin.register(Subscription)
 class SubscriptionAdmin(admin.ModelAdmin):
     list_display = ('user', 'author')

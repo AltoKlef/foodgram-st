@@ -5,7 +5,11 @@ from django.http import HttpResponse
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404
 from core.permissions import IsAuthorOrReadOnly
-from .models import Recipe, Ingredient, Favorite, ShoppingCart, RecipeIngredient
+from .models import (Recipe,
+                     Ingredient,
+                     Favorite,
+                     ShoppingCart,
+                     RecipeIngredient)
 from core.serializers import ShortRecipeSerializer
 from .serializers import (RecipeReadSerializer,
                           RecipeWriteSerializer,
@@ -46,7 +50,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             recipe, context=self.get_serializer_context()
         )
         return Response(read_serializer.data, status=status.HTTP_201_CREATED)
-    
+
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
@@ -67,10 +71,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
         try:
             recipe = self.get_object()
         except Recipe.DoesNotExist:
-            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND
+            )
 
         # Простейший способ: сгенерировать короткий ID на базе pk
-        short_code = f"3d{int(recipe.pk) * 10}"  # это заглушка, можно использовать хэш/базу
+        short_code = f"3d{int(recipe.pk) * 10}"
         short_link = f"https://foodgram.example.org/s/{short_code}"
 
         return Response({'short-link': short_link}, status=status.HTTP_200_OK)
@@ -124,7 +130,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 {'errors': 'Рецепта нет в списке покупок'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-   
+
     @action(
         detail=False,
         methods=['get'],
@@ -134,7 +140,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         user = request.user
 
         ingredients = (
-            RecipeIngredient.objects.filter(recipe__in_shopping_carts__user=user)
+            RecipeIngredient.objects.filter(
+                recipe__in_shopping_carts__user=user
+            )
             .values('ingredient__name', 'ingredient__measurement_unit')
             .annotate(total=Sum('amount'))
             .order_by('ingredient__name')

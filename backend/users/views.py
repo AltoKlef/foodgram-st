@@ -65,7 +65,9 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
 
         user = request.user
-        if not user.check_password(serializer.validated_data['current_password']):
+        if not user.check_password(
+            serializer.validated_data['current_password']
+        ):
             return Response(
                 {"current_password": ["Неверный текущий пароль."]},
                 status=status.HTTP_400_BAD_REQUEST
@@ -129,12 +131,18 @@ class UserViewSet(viewsets.ModelViewSet):
                     {'errors': 'Вы уже подписаны.'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-            subscription = Subscription.objects.create(user=user, author=author)
-            serializer = SubscriptionSerializer(subscription, context={'request': request})
+            subscription = Subscription.objects.create(
+                user=user, author=author
+            )
+            serializer = SubscriptionSerializer(
+                subscription, context={'request': request}
+            )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         if request.method == 'DELETE':
-            subscription = Subscription.objects.filter(user=user, author=author)
+            subscription = Subscription.objects.filter(
+                user=user, author=author
+            )
             if not subscription.exists():
                 return Response(
                     {'errors': 'Вы не подписаны на этого пользователя.'},
