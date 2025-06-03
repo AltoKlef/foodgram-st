@@ -1,56 +1,61 @@
 version: '3.8'
 
 services:
+  # Контейнер базы данных PostgreSQL
   db:
-    image: postgres:14
+    image: postgres:14  # Официальный образ PostgreSQL
     restart: always
     ports:
-      - "5433:5432"
+      - "5433:5433"  # Открываем порт 5432 хоста → 5432 контейнера
     environment:
-      POSTGRES_DB: foodgram
-      POSTGRES_USER: foodgram_user
-      POSTGRES_PASSWORD: foodgram_pass
+      POSTGRES_DB: foodgram  # Название БД
+      POSTGRES_USER: foodgram_user  # Пользователь
+      POSTGRES_PASSWORD: foodgram_pass  # Пароль
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data  # Хранение данных БД между перезапусками
 
+  # Контейнер с Django-приложением (бэкенд)
   backend:
-    build: ../backend
-    command: /app/entrypoint.sh
+    build: ../backend  # Сборка из Dockerfile в папке backend
+    command: /app/entrypoint.sh  # Точка входа (запуск Django, миграции и т.д.)
     volumes:
-      - ../backend:/app
-      - media_data:/app/media
-      - ../data:/app/data
+      - ../backend:/app  # Код проекта
+      - media_data:/app/media  # Медиафайлы пользователей
+      - ../data:/app/data  # Фикстуры или дополнительные файлы
     ports:
-      - "8000:8000"
+      - "8000:8000"  # Порт backend для разработки
     depends_on:
-      - db
+      - db  # Зависит от базы данных
     environment:
       DB_ENGINE: django.db.backends.postgresql
       DB_NAME: foodgram
       POSTGRES_USER: foodgram_user
       POSTGRES_PASSWORD: foodgram_pass
-      DB_HOST: db
+      DB_HOST: db  # Подключение к контейнеру db
       DB_PORT: 5432
 
+  # Контейнер со сборкой фронтенда (React)
   frontend:
     container_name: foodgram-front
-    build: ../frontend
+    build: ../frontend  # Сборка React-приложения
     volumes:
-      - ../frontend/:/app/result_build/
+      - ../frontend/:/app/result_build/  # Выходная сборка сохраняется в volume (если требуется)
 
+  # Контейнер с nginx — принимает внешние запросы, раздаёт фронт и проксирует backend
   nginx:
     container_name: foodgram-proxy
-    image: nginx:1.25.4-alpine
+    image: nginx:1.25.4-alpine  # Официальный образ nginx
     ports:
-      - "80:80"
+      - "80:80"  # Открытый HTTP порт
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - ../frontend/build:/usr/share/nginx/html/
-      - ../docs/:/usr/share/nginx/html/api/docs/
-      - media_data:/media/
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf  # Конфигурация nginx
+      - ../frontend/build:/usr/share/nginx/html/  # Сборка фронта
+      - ../docs/:/usr/share/nginx/html/api/docs/  # Документация API
+      - media_data:/media/  # Медиафайлы
     depends_on:
       - backend
-      - frontend
+      - frontend  # Запускается после backend и frontend
+
 volumes:
-  postgres_data:
-  media_data:
+  postgres_data:  # Хранилище данных PostgreSQL
+  media_data:     # Хранилище медиафайлов
