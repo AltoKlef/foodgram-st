@@ -26,13 +26,8 @@ services:
       - "8000:8000"  # Порт backend для разработки
     depends_on:
       - db  # Зависит от базы данных
-    environment:
-      DB_ENGINE: django.db.backends.postgresql
-      DB_NAME: foodgram
-      POSTGRES_USER: foodgram_user
-      POSTGRES_PASSWORD: foodgram_pass
-      DB_HOST: db  # Подключение к контейнеру db
-      DB_PORT: 5432
+    env_file:
+      - ../backend/.env
 
   # Контейнер со сборкой фронтенда (React)
   frontend:
