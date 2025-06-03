@@ -111,7 +111,9 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         if not value:
             raise serializers.ValidationError('Нужен хотя бы один ингредиент.')
         ids = [item['id'] for item in value]
-        duplicates = [item for item, count in Counter(ids).items() if count > 1]
+        duplicates = [
+            item for item, count in Counter(ids).items() if count > 1
+        ]
         if duplicates:
             raise serializers.ValidationError(
                 'Ингредиенты не должны повторяться.'
@@ -168,7 +170,6 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             self.update_ingredients(instance, ingredients_data)
 
         return instance
-
 
 
 class FavoriteRecipeSerializer(serializers.ModelSerializer):
