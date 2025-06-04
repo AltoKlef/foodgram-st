@@ -15,13 +15,13 @@
 
 PostgreSQL
 
-Django backend
+Django backend + Gunicorn
 
 React frontend
 
 Nginx
 
-📝 Данные по умолчанию
+
 Суперпользователь можно создать вручную:
 
 ```docker exec -it infra-backend-1 python manage.py createsuperuser```
