@@ -58,4 +58,4 @@ services:
 volumes:
   postgres_data:  # Хранилище данных PostgreSQL
   media_data:     # Хранилище медиафайлов
-  static_data:
+  static_data:    # Хранилище статики
