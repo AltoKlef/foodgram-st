@@ -3,6 +3,7 @@ version: '3.8'
 services:
   # Контейнер базы данных PostgreSQL
   db:
+    container_name: foodgram-db
     image: postgres:14  # Официальный образ PostgreSQL
     restart: always
     ports:
@@ -16,12 +17,14 @@ services:
 
   # Контейнер с Django-приложением (бэкенд)
   backend:
+    container_name: foodgram-back
     build: ../backend  # Сборка из Dockerfile в папке backend
     command: /app/entrypoint.sh  # Точка входа (запуск Django, миграции и т.д.)
     volumes:
       - ../backend:/app  # Код проекта
       - media_data:/app/media  # Медиафайлы пользователей
       - ../data:/app/data  # Фикстуры или дополнительные файлы
+      - static_data:/app/static
     ports:
       - "8000:8000"  # Порт backend для разработки
     depends_on:
@@ -47,6 +50,7 @@ services:
       - ../frontend/build:/usr/share/nginx/html/  # Сборка фронта
       - ../docs/:/usr/share/nginx/html/api/docs/  # Документация API
       - media_data:/media/  # Медиафайлы
+      - static_data:/static/ 
     depends_on:
       - backend
       - frontend  # Запускается после backend и frontend
@@ -54,3 +58,4 @@ services:
 volumes:
   postgres_data:  # Хранилище данных PostgreSQL
   media_data:     # Хранилище медиафайлов
+  static_data:
