@@ -34,3 +34,5 @@ Nginx
 Ссылка на докерхаб: https://hub.docker.com/repositories/altok1ef
 
 Ссылка на гитхаб: https://github.com/AltoKlef/foodgram-st
+
+Почему прошлую работу назвали плагиатом? Я не списывал, можно коммиты посмотреть.
