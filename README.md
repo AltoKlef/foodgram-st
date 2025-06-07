@@ -32,3 +32,5 @@ Nginx
 Так как volumes не перенести, можно воспользоваться postman_collection для создания тестовых данных
 
 Ссылка на докерхаб: https://hub.docker.com/repositories/altok1ef
+
+Ссылка на гитхаб: https://github.com/AltoKlef/foodgram-st
