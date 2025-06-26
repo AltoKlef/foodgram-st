@@ -27,8 +27,12 @@ Nginx
 
 Суперпользователь можно создать вручную:
 
-```docker exec -it infra-backend-1 python manage.py createsuperuser```
+```docker exec -it foodgram-backend python manage.py createsuperuser```
 
 Так как volumes не перенести, можно воспользоваться postman_collection для создания тестовых данных
 
 Ссылка на докерхаб: https://hub.docker.com/repositories/altok1ef
+
+Ссылка на гитхаб: https://github.com/AltoKlef/foodgram-st
+
+Почему прошлую работу назвали плагиатом? Я не списывал, можно коммиты посмотреть.
