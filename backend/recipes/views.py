@@ -1,24 +1,20 @@
-from rest_framework import viewsets, permissions, status
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.decorators import action
-from django.http import HttpResponse, HttpResponseNotFound
 from django.db.models import Sum
+from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect
+from rest_framework import permissions, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 from core.permissions import IsAuthorOrReadOnly
 from core.serializers import ShortRecipeSerializer
 from core.shortener import decode_base62, encode_base62
-from .models import (Recipe,
-                     Ingredient,
-                     Favorite,
-                     ShoppingCart,
-                     RecipeIngredient)
 
-from .serializers import (RecipeReadSerializer,
-                          RecipeWriteSerializer,
-                          IngredientSerializer,
-                          FavoriteRecipeSerializer)
 from .filters import IngredientFilter, RecipeFilter
+from .models import (Favorite, Ingredient, Recipe, RecipeIngredient,
+                     ShoppingCart)
+from .serializers import (FavoriteRecipeSerializer, IngredientSerializer,
+                          RecipeReadSerializer, RecipeWriteSerializer)
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):

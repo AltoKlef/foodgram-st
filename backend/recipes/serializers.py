@@ -1,9 +1,11 @@
-from rest_framework import serializers
 from collections import Counter
-from .models import Recipe, Ingredient, RecipeIngredient
-from core.fields import Base64ImageField
 
+from rest_framework import serializers
+
+from core.fields import Base64ImageField
 from users.serializers import CustomUserListSerializer
+
+from .models import Ingredient, Recipe, RecipeIngredient
 
 
 class IngredientSerializer(serializers.ModelSerializer):

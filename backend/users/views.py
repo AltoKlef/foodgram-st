@@ -1,17 +1,14 @@
-from rest_framework import viewsets, permissions, status
-
-from rest_framework.decorators import action
-from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-from .serializers import (
-    CustomUserCreateSerializer,
-    CustomUserListSerializer,
-    SetAvatarSerializer,
-    SetPasswordSerializer,
-    SubscriptionSerializer
-)
+from rest_framework import permissions, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
 from .models import Subscription
+from .serializers import (CustomUserCreateSerializer, CustomUserListSerializer,
+                          SetAvatarSerializer, SetPasswordSerializer,
+                          SubscriptionSerializer)
+
 User = get_user_model()
 
 
