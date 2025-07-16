@@ -5,7 +5,7 @@ from django.core.validators import RegexValidator
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
-from core.fields import Base64ImageField
+from drf_extra_fields.fields import Base64ImageField
 from core.serializers import ShortRecipeSerializer
 
 from .models import Subscription

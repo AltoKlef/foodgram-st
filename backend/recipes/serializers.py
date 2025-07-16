@@ -2,7 +2,7 @@ from collections import Counter
 
 from rest_framework import serializers
 
-from core.fields import Base64ImageField
+from drf_extra_fields.fields import Base64ImageField
 from users.serializers import CustomUserListSerializer
 
 from .models import Ingredient, Recipe, RecipeIngredient
@@ -57,7 +57,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
         source='ingredients_links',
         many=True
     )
-    image = Base64ImageField()
+    image = Base64ImageField(required=True, allow_null=False)
     author = CustomUserListSerializer(read_only=True)
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
@@ -91,7 +91,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     и изображение в формате base64.
     """
     ingredients = IngredientAmountSerializer(many=True, required=True)
-    image = Base64ImageField(required=True, allow_null=True)
+    image = Base64ImageField(required=True, allow_null=False)
     cooking_time = serializers.IntegerField(min_value=1)
     short_link = serializers.SerializerMethodField()
 
@@ -108,6 +108,11 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                 'ingredients': 'Это поле обязательно.'
             })
         return data
+
+    def validate_image(self, value):
+        if value is None:
+            raise serializers.ValidationError('Изображение обязательно')
+        return value
 
     def validate_ingredients(self, value):
         if not value:
@@ -175,7 +180,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
 
 
 class FavoriteRecipeSerializer(serializers.ModelSerializer):
-    image = Base64ImageField()
+    image = Base64ImageField(required=True, allow_null=False)
 
     class Meta:
         model = Recipe
