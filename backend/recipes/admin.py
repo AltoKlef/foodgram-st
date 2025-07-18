@@ -28,11 +28,20 @@ class IngredientAdmin(admin.ModelAdmin):
     ordering = ('name',)
 
 
+# инлайн модель для рецепта
+class RecipeIngredientInline(admin.TabularInline):
+    model = RecipeIngredient
+    extra = 1
+    min_num = 1
+    validate_min = True
+
+
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     list_display = ('name', 'author', 'favorites_count')
     search_fields = ('name', 'author__username', 'author__email')
     list_filter = ('author', 'name')
+    inlines = [RecipeIngredientInline]
 
     @admin.display(description='В избранном раз')
     def favorites_count(self, obj):

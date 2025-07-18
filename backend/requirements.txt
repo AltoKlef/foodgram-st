@@ -2,6 +2,7 @@ asgiref==3.8.1
 certifi==2025.4.26
 cffi==1.17.1
 charset-normalizer==3.4.2
+colorama==0.4.6
 cryptography==45.0.3
 defusedxml==0.7.1
 Django==5.2.1
@@ -28,6 +29,7 @@ requests-oauthlib==2.0.0
 social-auth-app-django==5.4.3
 social-auth-core==4.6.1
 sqlparse==0.5.3
+tqdm==4.67.1
 typing_extensions==4.14.0
 tzdata==2025.2
 urllib3==2.4.0

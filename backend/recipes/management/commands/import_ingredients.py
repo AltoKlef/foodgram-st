@@ -5,6 +5,8 @@ from django.core.management.base import BaseCommand
 
 from recipes.models import Ingredient
 
+from tqdm import tqdm
+
 
 class Command(BaseCommand):
     help = 'Импортирует ингредиенты из файла ingredients.csv'
@@ -18,7 +20,9 @@ class Command(BaseCommand):
         with file_path.open(encoding='utf-8') as csvfile:
             reader = csv.reader(csvfile)
             count = 0
-            for row in reader:
+            for row in tqdm(
+                reader, desc='Загрузка ингредиентов', unit=' строк'
+            ):
                 if len(row) != 2:
                     self.stdout.write(self.style.WARNING(
                         f"Пропущена строка: {row}"
