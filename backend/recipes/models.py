@@ -1,7 +1,6 @@
 # Create your models here.
 from django.conf import settings
 from django.db import models
-from django_filters.rest_framework import DjangoFilterBackend
 from core.constants import (MAX_NAME_LENGTH, MAX_UOF_LENGTH,
                             IMAGE_UPLOAD_PATH, MIN_COOKING_TIME)
 from django.core.validators import MinValueValidator
@@ -91,6 +90,7 @@ class RecipeIngredient(models.Model):
         ]
         verbose_name = 'Ингридент в рецепте'
         verbose_name_plural = 'Ингридиенты в рецептах'
+        ordering = ['ingredient__name']
 
     def __str__(self):
         return f'{self.ingredient} — {self.amount} for {self.recipe}'
@@ -115,6 +115,7 @@ class UserRecipeBase(models.Model):
                 name='%(class)s_unique_user_recipe'
             )
         ]
+        ordering = ['-id']
 
     def __str__(self):
         return f'{self.user} - {self.recipe}'
