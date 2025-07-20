@@ -5,14 +5,20 @@ from rest_framework import serializers
 from drf_extra_fields.fields import Base64ImageField
 from users.serializers import CustomUserListSerializer
 
-from .models import Ingredient, Recipe, RecipeIngredient
+from recipes.models import Ingredient, Recipe, RecipeIngredient
+from core.constants import MIN_INGREDIENT_AMOUNT, MIN_COOKING_TIME
 
 
 class IngredientSerializer(serializers.ModelSerializer):
     """
     Сериализатор для модели Ingredient.
-    Используется для отображения списка ингредиентов с полями:
-    id, name, measurement_unit.
+
+    Атрибуты
+    ---------
+    model : Ingredient
+        Модель ингредиента
+    fields : tuple
+        Отображаемые поля: id, name, measurement_unit
     """
     class Meta:
         model = Ingredient
@@ -21,20 +27,38 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 class IngredientAmountSerializer(serializers.Serializer):
     """
-    Сериализатор для получения данных об ингредиентах в рецепте
-    при создании/редактировании рецепта.
-    Принимает id ингредиента и его количество.
+    Сериализатор для ингредиентов в рецепте.
+
+    Применяется при создании или редактировании рецепта.
+
+    Атрибуты
+    ---------
+    id : PrimaryKeyRelatedField
+        Ссылка на объект ингредиента
+    amount : IntegerField
+        Количество ингредиента
     """
     id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
-    amount = serializers.IntegerField(min_value=1)
+    amount = serializers.IntegerField(min_value=MIN_INGREDIENT_AMOUNT)
 
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
     """
-    Сериализатор для отображения ингредиента в рецепте (на чтение).
-    Отображает вложенные данные ингредиента:
-    id, name, measurement_unit и amount.
-    Используется в RecipeReadSerializer.
+    Сериализатор для ингредиентов рецепта (на чтение).
+
+    Используется в RecipeReadSerializer. Отображает вложенные поля
+    ингредиента: id, name, measurement_unit и amount.
+
+    Атрибуты
+    ---------
+    id : ReadOnlyField
+        Идентификатор ингредиента
+    name : ReadOnlyField
+        Название ингредиента
+    measurement_unit : ReadOnlyField
+        Единица измерения
+    amount : IntegerField
+        Количество ингредиента
     """
     id = serializers.ReadOnlyField(source='ingredient.id')
     name = serializers.ReadOnlyField(source='ingredient.name')
@@ -51,7 +75,22 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
 class RecipeReadSerializer(serializers.ModelSerializer):
     """
     Сериализатор для чтения рецептов.
-    Отображает список ингредиентов, автора, флаг избранного и корзины.
+
+    Отображает список ингредиентов, автора, флаг избранного и
+    добавления в корзину.
+
+    Атрибуты
+    ---------
+    ingredients : RecipeIngredientSerializer
+        Список ингредиентов
+    image : Base64ImageField
+        Изображение рецепта
+    author : CustomUserListSerializer
+        Автор рецепта
+    is_favorited : SerializerMethodField
+        Признак избранного
+    is_in_shopping_cart : SerializerMethodField
+        Признак нахождения в корзине
     """
     ingredients = RecipeIngredientSerializer(
         source='recipe_ingredients',
@@ -71,28 +110,40 @@ class RecipeReadSerializer(serializers.ModelSerializer):
         ]
 
     def get_is_favorited(self, obj):
+        """Возвращает True, если рецепт в избранном у пользователя."""
         user = self.context.get('request').user
-        if user.is_anonymous:
-            return False
-        return obj.favorites.filter(user=user).exists()
+        return (user.is_authenticated
+                and obj.favorites.filter(user=user).exists())
 
     def get_is_in_shopping_cart(self, obj):
+        """Возвращает True, если рецепт в корзине пользователя."""
         user = self.context.get('request').user
-        if user.is_anonymous:
-            return False
-        return obj.shopping_carts.filter(user=user).exists()
+        return (user.is_authenticated
+                and obj.shopping_carts.filter(user=user).exists())
 
 
 class RecipeWriteSerializer(serializers.ModelSerializer):
     """
     Сериализатор для создания и обновления рецептов.
+
     Принимает список ингредиентов (id и amount)
     через IngredientAmountSerializer
     и изображение в формате base64.
+
+    Атрибуты
+    ---------
+    ingredients : IngredientAmountSerializer
+        Список ингредиентов рецепта
+    image : Base64ImageField
+        Изображение рецепта
+    cooking_time : IntegerField
+        Время приготовления
+    short_link : SerializerMethodField
+        Короткая ссылка
     """
     ingredients = IngredientAmountSerializer(many=True, required=True)
     image = Base64ImageField(required=True, allow_null=False)
-    cooking_time = serializers.IntegerField(min_value=1)
+    cooking_time = serializers.IntegerField(min_value=MIN_COOKING_TIME)
     short_link = serializers.SerializerMethodField()
 
     class Meta:
@@ -103,6 +154,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, data):
+        """Проверка наличия поля ingredients."""
         if 'ingredients' not in data:
             raise serializers.ValidationError({
                 'ingredients': 'Это поле обязательно.'
@@ -110,11 +162,13 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         return data
 
     def validate_image(self, value):
+        """Проверка, что изображение не пустое."""
         if value is None:
             raise serializers.ValidationError('Изображение обязательно')
         return value
 
     def validate_ingredients(self, value):
+        """Проверка списка ингредиентов на пустоту и дубликаты."""
         if not value:
             raise serializers.ValidationError('Нужен хотя бы один ингредиент.')
         ids = [item['id'] for item in value]
@@ -128,10 +182,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         return value
 
     def create_ingredients(self, ingredients_data, recipe):
-        """
-        Создаёт записи в промежуточной таблице RecipeIngredient
-        на основе переданных ингредиентов и количества.
-        """
+        """Создаёт объекты связи рецепт-ингредиент."""
         RecipeIngredient.objects.bulk_create([
             RecipeIngredient(
                 recipe=recipe,
@@ -142,11 +193,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         ])
 
     def create(self, validated_data):
-        """
-        Создание нового рецепта.
-        Извлекает ингредиенты из validated_data,
-        создаёт рецепт и связывает ингредиенты.
-        """
+        """Создаёт рецепт и связывает его с ингредиентами."""
         ingredients_data = validated_data.pop('ingredients')
         recipe = Recipe.objects.create(
             author=self.context['request'].user,
@@ -156,6 +203,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         return recipe
 
     def update_ingredients(self, recipe, ingredients_data):
+        """Обновляет список ингредиентов у рецепта."""
         recipe.recipe_ingredients.all().delete()
         RecipeIngredient.objects.bulk_create([
             RecipeIngredient(
@@ -167,6 +215,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         ])
 
     def update(self, instance, validated_data):
+        """Обновляет рецепт и его ингредиенты."""
         ingredients_data = validated_data.pop('ingredients')
 
         for attr, value in validated_data.items():
@@ -180,6 +229,16 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
 
 
 class FavoriteRecipeSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для краткого представления рецепта.
+
+    Используется в списке избранных рецептов.
+
+    Атрибуты
+    ---------
+    image : Base64ImageField
+        Изображение рецепта
+    """
     image = Base64ImageField(required=True, allow_null=False)
 
     class Meta:
