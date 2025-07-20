@@ -54,7 +54,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
     Отображает список ингредиентов, автора, флаг избранного и корзины.
     """
     ingredients = RecipeIngredientSerializer(
-        source='ingredients_links',
+        source='recipe_ingredients',
         many=True
     )
     image = Base64ImageField(required=True, allow_null=False)
@@ -74,13 +74,13 @@ class RecipeReadSerializer(serializers.ModelSerializer):
         user = self.context.get('request').user
         if user.is_anonymous:
             return False
-        return obj.favorited_by.filter(user=user).exists()
+        return obj.favorites.filter(user=user).exists()
 
     def get_is_in_shopping_cart(self, obj):
         user = self.context.get('request').user
         if user.is_anonymous:
             return False
-        return obj.in_shopping_carts.filter(user=user).exists()
+        return obj.shopping_carts.filter(user=user).exists()
 
 
 class RecipeWriteSerializer(serializers.ModelSerializer):
@@ -156,7 +156,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         return recipe
 
     def update_ingredients(self, recipe, ingredients_data):
-        recipe.ingredients_links.all().delete()
+        recipe.recipe_ingredients.all().delete()
         RecipeIngredient.objects.bulk_create([
             RecipeIngredient(
                 recipe=recipe,
