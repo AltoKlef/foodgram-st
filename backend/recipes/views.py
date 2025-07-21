@@ -38,6 +38,30 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeReadSerializer
         return RecipeWriteSerializer
 
+    def handle_recipe_relation(self, request, pk, model, error_text):
+        recipe = get_object_or_404(Recipe, pk=pk)
+        user = request.user
+
+        if request.method == 'POST':
+            if model.objects.filter(user=user, recipe=recipe).exists():
+                return Response(
+                    {'errors': f'Рецепт уже {error_text}'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            model.objects.create(user=user, recipe=recipe)
+            serializer = ShortRecipeSerializer(recipe)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        deleted_count, _ = model.objects.filter(
+            user=user, recipe=recipe
+        ).delete()
+        if deleted_count != 0:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            {'errors': f'Рецепта нет {error_text}'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
     @action(detail=True, methods=['get'], url_path='get-link')
     def get_short_link(self, request, pk=None):
         recipe = self.get_object()
@@ -48,51 +72,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post', 'delete'])
     def favorite(self, request, pk=None):
-        recipe = get_object_or_404(Recipe, pk=pk)
-        user = request.user
-
-        if request.method == 'POST':
-            if Favorite.objects.filter(user=user, recipe=recipe).exists():
-                return Response(
-                    {'errors': 'Рецепт уже в избранном'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            Favorite.objects.create(user=user, recipe=recipe)
-            serializer = ShortRecipeSerializer(recipe)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        if request.method == 'DELETE':
-            favorite = Favorite.objects.filter(user=user, recipe=recipe)
-            if favorite.exists():
-                favorite.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            return Response(
-                {'errors': 'Рецепта нет в избранном'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        return self.handle_recipe_relation(
+            request, pk, Favorite, 'в избранном'
+        )
 
     @action(detail=True, methods=['post', 'delete'], url_path='shopping_cart')
     def shopping_cart(self, request, pk=None):
-        user = request.user
-        recipe = get_object_or_404(Recipe, pk=pk)
-
-        if request.method == 'POST':
-            if ShoppingCart.objects.filter(user=user, recipe=recipe).exists():
-                return Response(
-                    {'errors': 'Рецепт уже в списке покупок'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            ShoppingCart.objects.create(user=user, recipe=recipe)
-            serializer = ShortRecipeSerializer(recipe)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        cart_item = ShoppingCart.objects.filter(user=user, recipe=recipe)
-        if cart_item.exists():
-            cart_item.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(
-            {'errors': 'Рецепта нет в списке покупок'},
-            status=status.HTTP_400_BAD_REQUEST
+        return self.handle_recipe_relation(
+            request, pk, ShoppingCart, 'в списке покупок'
         )
 
     @action(
