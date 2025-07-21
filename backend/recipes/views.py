@@ -5,11 +5,11 @@ from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.permissions import SAFE_METHODS
 
 from core.permissions import IsAuthorOrReadOnly
 from core.serializers import ShortRecipeSerializer
 from core.shortener import decode_base62, encode_base62
-from rest_framework.permissions import SAFE_METHODS
 from recipes.filters import IngredientFilter, RecipeFilter
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             ShoppingCart)
@@ -37,31 +37,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if self.request.method in SAFE_METHODS:
             return RecipeReadSerializer
         return RecipeWriteSerializer
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        recipe = serializer.save()
-
-        read_serializer = RecipeReadSerializer(
-            recipe, context=self.get_serializer_context()
-        )
-        return Response(read_serializer.data, status=status.HTTP_201_CREATED)
-
-    def update(self, request, *args, **kwargs):
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-
-        serializer = self.get_serializer(
-            instance, data=request.data, partial=partial
-        )
-        serializer.is_valid(raise_exception=True)
-        recipe = serializer.save()
-
-        read_serializer = RecipeReadSerializer(
-            recipe, context=self.get_serializer_context()
-        )
-        return Response(read_serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['get'], url_path='get-link')
     def get_short_link(self, request, pk=None):
@@ -111,15 +86,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
             serializer = ShortRecipeSerializer(recipe)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        if request.method == 'DELETE':
-            cart_item = ShoppingCart.objects.filter(user=user, recipe=recipe)
-            if cart_item.exists():
-                cart_item.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            return Response(
-                {'errors': 'Рецепта нет в списке покупок'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        cart_item = ShoppingCart.objects.filter(user=user, recipe=recipe)
+        if cart_item.exists():
+            cart_item.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            {'errors': 'Рецепта нет в списке покупок'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     @action(
         detail=False,

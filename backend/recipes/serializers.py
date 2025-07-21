@@ -179,6 +179,11 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Изображение обязательно')
         return value
 
+    def to_representation(self, instance):
+        return RecipeReadSerializer(
+            instance, context=self.context
+        ).data
+
     def create_ingredients(self, ingredients_data, recipe):
         """Создаёт объекты связи рецепт-ингредиент."""
         RecipeIngredient.objects.bulk_create(
@@ -212,24 +217,3 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         self.update_ingredients(instance, ingredients_data)
 
         return instance
-
-
-class FavoriteRecipeSerializer(serializers.ModelSerializer):
-    """
-    Сериализатор для краткого представления рецепта.
-
-    Используется в списке избранных рецептов.
-
-    Атрибуты
-    ---------
-    image : Base64ImageField
-        Изображение рецепта
-    Используется отдельный сериализатор, так как остальные
-    содержат лишние поля (ингредиенты, автора и т.п.), отключить которые
-    через Meta невозможно.
-    """
-    image = Base64ImageField(required=True)
-
-    class Meta:
-        model = Recipe
-        fields = ('id', 'name', 'image', 'cooking_time')
