@@ -109,17 +109,19 @@ class RecipeReadSerializer(serializers.ModelSerializer):
             'author', 'is_favorited', 'is_in_shopping_cart'
         ]
 
-    def get_is_favorited(self, obj):
-        """Возвращает True, если рецепт в избранном у пользователя."""
+    def _check_user_relation(self, obj, related_manager):
+        """Проверяет наличие рецепта в favorites или shopping_carts."""
         user = self.context.get('request').user
         return (user.is_authenticated
-                and obj.favorites.filter(user=user).exists())
+                and related_manager.filter(user=user).exists())
+
+    def get_is_favorited(self, obj):
+        """Возвращает True, если рецепт в избранном у пользователя."""
+        return self._check_user_relation(obj, obj.favorites)
 
     def get_is_in_shopping_cart(self, obj):
         """Возвращает True, если рецепт в корзине пользователя."""
-        user = self.context.get('request').user
-        return (user.is_authenticated
-                and obj.shopping_carts.filter(user=user).exists())
+        return self._check_user_relation(obj, obj.favorites)
 
 
 class RecipeWriteSerializer(serializers.ModelSerializer):
@@ -154,10 +156,20 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, data):
-        """Проверка наличия поля ingredients."""
-        if 'ingredients' not in data:
+        """Проверка списка ингредиентов на наличие, пустоту и дубликаты."""
+        ingredients = data.get('ingredients')
+        if ingredients is None:
             raise serializers.ValidationError({
                 'ingredients': 'Это поле обязательно.'
+            })
+        if not ingredients:
+            raise serializers.ValidationError({
+                'ingredients': 'Нужен хотя бы один ингредиент.'
+            })
+        ids = [item['id'] for item in ingredients]
+        if len(ids) != len(set(ids)):
+            raise serializers.ValidationError({
+                'ingredients': 'Ингредиенты не должны повторяться.'
             })
         return data
 
@@ -165,20 +177,6 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         """Проверка, что изображение не пустое."""
         if value is None:
             raise serializers.ValidationError('Изображение обязательно')
-        return value
-
-    def validate_ingredients(self, value):
-        """Проверка списка ингредиентов на пустоту и дубликаты."""
-        if not value:
-            raise serializers.ValidationError('Нужен хотя бы один ингредиент.')
-        ids = [item['id'] for item in value]
-        duplicates = [
-            item for item, count in Counter(ids).items() if count > 1
-        ]
-        if duplicates:
-            raise serializers.ValidationError(
-                'Ингредиенты не должны повторяться.'
-            )
         return value
 
     def create_ingredients(self, ingredients_data, recipe):
