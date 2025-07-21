@@ -181,14 +181,14 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
 
     def create_ingredients(self, ingredients_data, recipe):
         """Создаёт объекты связи рецепт-ингредиент."""
-        RecipeIngredient.objects.bulk_create([
+        RecipeIngredient.objects.bulk_create(
             RecipeIngredient(
                 recipe=recipe,
                 ingredient=ingredient_data['id'],
                 amount=ingredient_data['amount']
             )
             for ingredient_data in ingredients_data
-        ])
+        )
 
     def create(self, validated_data):
         """Создаёт рецепт и связывает его с ингредиентами."""
@@ -203,25 +203,13 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     def update_ingredients(self, recipe, ingredients_data):
         """Обновляет список ингредиентов у рецепта."""
         recipe.recipe_ingredients.all().delete()
-        RecipeIngredient.objects.bulk_create([
-            RecipeIngredient(
-                recipe=recipe,
-                ingredient=ingredient_data['id'],
-                amount=ingredient_data['amount']
-            )
-            for ingredient_data in ingredients_data
-        ])
+        self.create_ingredients(ingredients_data, recipe)
 
     def update(self, instance, validated_data):
         """Обновляет рецепт и его ингредиенты."""
         ingredients_data = validated_data.pop('ingredients')
-
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
-
-        if ingredients_data is not None:
-            self.update_ingredients(instance, ingredients_data)
+        instance = super().update(instance, validated_data)
+        self.update_ingredients(instance, ingredients_data)
 
         return instance
 
@@ -236,8 +224,11 @@ class FavoriteRecipeSerializer(serializers.ModelSerializer):
     ---------
     image : Base64ImageField
         Изображение рецепта
+    Используется отдельный сериализатор, так как остальные
+    содержат лишние поля (ингредиенты, автора и т.п.), отключить которые
+    через Meta невозможно.
     """
-    image = Base64ImageField(required=True, allow_null=False)
+    image = Base64ImageField(required=True)
 
     class Meta:
         model = Recipe

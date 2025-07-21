@@ -9,12 +9,12 @@ from rest_framework.views import APIView
 from core.permissions import IsAuthorOrReadOnly
 from core.serializers import ShortRecipeSerializer
 from core.shortener import decode_base62, encode_base62
-
-from .filters import IngredientFilter, RecipeFilter
-from .models import (Favorite, Ingredient, Recipe, RecipeIngredient,
-                     ShoppingCart)
-from .serializers import (FavoriteRecipeSerializer, IngredientSerializer,
-                          RecipeReadSerializer, RecipeWriteSerializer)
+from rest_framework.permissions import SAFE_METHODS
+from recipes.filters import IngredientFilter, RecipeFilter
+from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
+                            ShoppingCart)
+from recipes.serializers import (IngredientSerializer,
+                                 RecipeReadSerializer, RecipeWriteSerializer)
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
@@ -32,10 +32,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     ]
     queryset = Recipe.objects.all()
     filterset_class = RecipeFilter
-    # pagination_class = None
 
     def get_serializer_class(self):
-        if self.request.method in ('GET',):
+        if self.request.method in SAFE_METHODS:
             return RecipeReadSerializer
         return RecipeWriteSerializer
 
@@ -84,7 +83,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             Favorite.objects.create(user=user, recipe=recipe)
-            serializer = FavoriteRecipeSerializer(recipe)
+            serializer = ShortRecipeSerializer(recipe)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         if request.method == 'DELETE':
