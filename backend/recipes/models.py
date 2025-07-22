@@ -1,9 +1,10 @@
 # Create your models here.
 from django.conf import settings
-from django.db import models
-from core.constants import (MAX_NAME_LENGTH, MAX_UOF_LENGTH,
-                            IMAGE_UPLOAD_PATH, MIN_COOKING_TIME)
 from django.core.validators import MinValueValidator
+from django.db import models
+
+from core.constants import (IMAGE_UPLOAD_PATH, MAX_NAME_LENGTH, MAX_UOF_LENGTH,
+                            MIN_COOKING_TIME)
 
 
 class Ingredient(models.Model):

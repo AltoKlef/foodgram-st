@@ -2,10 +2,9 @@ import csv
 from pathlib import Path
 
 from django.core.management.base import BaseCommand
+from tqdm import tqdm
 
 from recipes.models import Ingredient
-
-from tqdm import tqdm
 
 
 class Command(BaseCommand):

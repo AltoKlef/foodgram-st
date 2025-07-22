@@ -1,12 +1,11 @@
 from collections import Counter
 
+from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 
-from drf_extra_fields.fields import Base64ImageField
-from users.serializers import CustomUserListSerializer
-
+from core.constants import MIN_COOKING_TIME, MIN_INGREDIENT_AMOUNT
 from recipes.models import Ingredient, Recipe, RecipeIngredient
-from core.constants import MIN_INGREDIENT_AMOUNT, MIN_COOKING_TIME
+from users.serializers import CustomUserListSerializer
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -121,7 +120,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
 
     def get_is_in_shopping_cart(self, obj):
         """Возвращает True, если рецепт в корзине пользователя."""
-        return self._check_user_relation(obj, obj.favorites)
+        return self._check_user_relation(obj, obj.shopping_carts)
 
 
 class RecipeWriteSerializer(serializers.ModelSerializer):

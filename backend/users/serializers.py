@@ -2,10 +2,10 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.validators import RegexValidator
+from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
-from drf_extra_fields.fields import Base64ImageField
 from core.serializers import ShortRecipeSerializer
 
 from .models import Subscription

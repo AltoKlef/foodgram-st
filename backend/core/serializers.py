@@ -1,8 +1,8 @@
+from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 
 from recipes.models import Recipe
 
-from drf_extra_fields.fields import Base64ImageField
 
 class ShortRecipeSerializer(serializers.ModelSerializer):
     """
