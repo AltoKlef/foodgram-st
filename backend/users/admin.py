@@ -4,7 +4,6 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 from users.models import Subscription
 
-# Register your models here.
 User = get_user_model()
 
 
